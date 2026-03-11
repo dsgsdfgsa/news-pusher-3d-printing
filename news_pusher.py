@@ -304,6 +304,165 @@ def generate_email_html(news_items):
     """生成HTML邮件内容"""
     yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y年%m月%d日')
     
+    # 使用独立的 CSS 字符串，避免 f-string 的双大括号冲突
+    css_style = """
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .header .date {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            font-weight: 600;
+        }
+        .news-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .news-item:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+        .news-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .news-title a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .news-title a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        .news-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        .news-meta span {
+            margin-right: 15px;
+        }
+        .source-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: #667eea;
+            color: white;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin-bottom: 10px;
+        }
+        .footer .icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    """
+    
     html = f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -312,161 +471,7 @@ def generate_email_html(news_items):
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D打印热点新闻 - {yesterday}</title>
     <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        body {{
-            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
-            line-height: 1.6;
-        }}
-        .container {{
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }}
-        .header {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-        }}
-        .header h1 {{
-            font-size: 32px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }}
-        .header .subtitle {{
-            font-size: 18px;
-            opacity: 0.9;
-        }}
-        .header .date {{
-            margin-top: 15px;
-            padding: 8px 20px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            display: inline-block;
-            font-size: 14px;
-        }}
-        .content {{
-            padding: 30px;
-        }}
-        .stats {{
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }}
-        .stat-item {{
-            text-align: center;
-        }}
-        .stat-number {{
-            font-size: 28px;
-            font-weight: bold;
-            color: #667eea;
-        }}
-        .stat-label {{
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }}
-        .section {{
-            margin-bottom: 30px;
-        }}
-        .section-title {{
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-            font-weight: 600;
-        }}
-        .news-item {{
-            padding: 20px;
-            margin-bottom: 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }}
-        .news-item:hover {{
-            background-color: #e9ecef;
-            transform: translateX(5px);
-        }}
-        .news-title {{
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-        }}
-        .news-title a {{
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }}
-        .news-title a:hover {{
-            color: #764ba2;
-            text-decoration: underline;
-        }}
-        .news-meta {{
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-        }}
-        .news-meta span {{
-            margin-right: 15px;
-        }}
-        .source-tag {{
-            display: inline-block;
-            padding: 2px 8px;
-            background-color: #667eea;
-            color: white;
-            border-radius: 3px;
-            font-size: 11px;
-        }}
-        .footer {{
-            text-align: center;
-            padding: 30px;
-            background-color: #f8f9fa;
-            color: #666;
-            font-size: 14px;
-            border-top: 1px solid #e9ecef;
-        }}
-        .footer p {{
-            margin-bottom: 10px;
-        }}
-        .footer .icon {{
-            font-size: 24px;
-            margin-bottom: 10px;
-        }}
-        @media (max-width: 600px) {{
-            .container {{
-                margin: 0;
-                border-radius: 0;
-            }}
-            .header {{
-                padding: 30px 20px;
-            }}
-            .header h1 {{
-                font-size: 24px;
-            }}
-            .content {{
-                padding: 20px;
-            }}
-            .stats {{
-                flex-direction: column;
-                gap: 10px;
-            }}
-        }}
+{css_style}
     </style>
 </head>
 <body>
